@@ -143,6 +143,7 @@ def make_move(start, end, board):
         additional_turn = True
         selected_piece = (er, ec)  # Keep selected piece for more jumps
         # print(f"Bonus turn, keeping piece at {selected_piece}")
+        pygame.time.wait(500)  # Wait for half a second to avoid blipping across the screen
     else:
         additional_turn = False
         selected_piece = None  # Reset after move
@@ -354,7 +355,8 @@ def simulate_move(board, move):
 
 def ai_move(board):
     """ Make a move for the AI using the Minimax algorithm. """
-    _, best_move = minimax(board, 3, -math.inf, math.inf, True)
+    depth = 5
+    _, best_move = minimax(board, depth, -math.inf, math.inf, True)
     if best_move:
         make_move(best_move[0], best_move[1], board)
 
