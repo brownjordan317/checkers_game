@@ -333,19 +333,38 @@ def simulate_move(board, move):
         return new_board  # No piece to move
 
     # Move the piece
+    piece.move(er, ec)  # Update piece's internal position
     new_board[er][ec] = piece
     new_board[sr][sc] = None
 
     # Handle jumps
-    if abs(sr - er) == 2 and abs(sc - ec) == 2:
+    is_jump = abs(sr - er) == 2 and abs(sc - ec) == 2
+    if is_jump:
         mid_r, mid_c = (sr + er) // 2, (sc + ec) // 2
         new_board[mid_r][mid_c] = None  # Remove the captured piece
 
-    # Handle king promotion
+    # Check for additional jumps
+    while is_jump:
+        forced_jumps = get_available_jumps((er, ec), new_board)
+        if not forced_jumps:
+            break  # No more jumps available
+
+        # Pick the first available jump
+        next_jump = forced_jumps[0]
+        sr, sc = er, ec
+        er, ec = next_jump
+        mid_r, mid_c = (sr + er) // 2, (sc + ec) // 2
+        new_board[mid_r][mid_c] = None  # Remove captured piece
+        piece.move(er, ec)  # Update internal position
+        new_board[er][ec] = piece
+        new_board[sr][sc] = None
+
+    # Handle king promotion after all jumps
     if (piece.color == "blue" and er == ROWS - 1) or (piece.color == "red" and er == 0):
         piece.promote()
 
     return new_board
+
 
 
 def ai_move(board):
@@ -409,7 +428,7 @@ def handle_start_screen_events():
             x, y = pygame.mouse.get_pos()
             if WIDTH // 2 - 100 <= x <= WIDTH // 2 + 100:
                 if HEIGHT // 2 <= y <= HEIGHT // 2 + 50:
-                    difficulty = 3
+                    difficulty = 1
                     return True
                 elif HEIGHT // 2 + 70 <= y <= HEIGHT // 2 + 120:
                     difficulty = 5
